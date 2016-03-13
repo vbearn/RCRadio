@@ -11,16 +11,34 @@ namespace AryaBit.AirCraft.Radio.Core
     class SerialTransmitter
     {
 
+        #region Fields
+
         private SerialPort port;
+
+        #endregion
+
+        #region init
 
         public SerialTransmitter()
         {
             port = new SerialPort("COM5", 57600, Parity.None, 8, StopBits.One);
 
             port.DataReceived += new SerialDataReceivedEventHandler(DataReceivedHandler);
+        }
 
+        public void Open()
+        {
             port.Open();
         }
+
+        public void Close()
+        {
+            port.Close();
+        }
+
+        #endregion
+
+        #region Send Receive
 
         private void DataReceivedHandler(object sender, SerialDataReceivedEventArgs e)
         {
@@ -29,16 +47,13 @@ namespace AryaBit.AirCraft.Radio.Core
             System.Diagnostics.Debug.WriteLine("Data Received:" + indata);
 
         }
+
         public void SendData2Bytes(byte[] buffer)
         {
             port.Write(buffer, 0, 3);
         }
 
-        public void Close()
-        {
-            port.Close();
-        }
-
+        #endregion
 
     }
 }

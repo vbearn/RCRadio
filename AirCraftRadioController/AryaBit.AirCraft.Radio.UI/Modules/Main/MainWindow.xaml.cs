@@ -37,17 +37,28 @@ namespace AryaBit.AirCraft.Radio.UI
         {
             InitializeComponent();
 
+            AddLogItem("SYS", "App Started.");
             initModules();
 
         }
 
         private void initModules()
         {
+            AddLogItem("SYS", "Initializing modules...");
             logItems = new List<LogItem>();
-            joystick = new Joystick();
-            joystick.OnStateUpdated += Joystick_OnStateUpdated;
-            joystick.StartCapture();
 
+            try
+            {
+                AddLogItem("SYS", "Initializing Joystick module...");
+                initJoystic();
+                joyLeft.YValue = 90;
+            }
+            catch (Exception)
+            {
+                AddLogItem("SYS", "Joystick module initialization FAILED.");
+            }
+
+            AddLogItem("SYS", "Modules initialized.");
         }
 
         #endregion
@@ -103,6 +114,13 @@ namespace AryaBit.AirCraft.Radio.UI
         int lastRY;
         int lastRX;
 
+        private void initJoystic()
+        {
+            joystick = new Joystick();
+            joystick.OnStateUpdated += Joystick_OnStateUpdated;
+            joystick.StartCapture();
+        }
+
         private void Joystick_OnStateUpdated(SlimDX.DirectInput.JoystickState state)
         {
 
@@ -120,28 +138,34 @@ namespace AryaBit.AirCraft.Radio.UI
 
             Application.Current.Dispatcher.Invoke(new Action(() =>
             {
-                if (state.Y != lastY)
-                {
-                    lastY = state.Y;
-                    sliderY.Value = aircraftState.elevatorValue;
-                }
 
                 if (state.X != lastX)
                 {
                     lastX = state.X;
                     sliderX.Value = aircraftState.rudderValue;
+                    joyLeft.XValue = aircraftState.rudderValue;
+                }
+
+                if (state.Y != lastY)
+                {
+                    lastY = state.Y;
+                    sliderY.Value = aircraftState.elevatorValue;
+                    joyLeft.YValue = aircraftState.elevatorValue;
+
                 }
 
                 if (state.RotationX != lastRX)
                 {
                     lastRX = state.RotationX;
                     sliderRX.Value = aircraftState.aileronValue;
+                    joyRight.XValue = aircraftState.aileronValue;
                 }
 
                 if (state.RotationY != lastRY)
                 {
                     lastRY = state.RotationY;
                     sliderRY.Value = aircraftState.throtleValue;
+                    joyRight.YValue = aircraftState.throtleValue;
                 }
 
                 if (this.rCommand != null)
@@ -212,7 +236,7 @@ namespace AryaBit.AirCraft.Radio.UI
             SendChannelTestData(4);
         }
 
-    private void SendChannelTestData(byte channelNumber)
+        private void SendChannelTestData(byte channelNumber)
         {
             if (rCommand == null)
                 return;

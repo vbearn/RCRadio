@@ -173,6 +173,8 @@ namespace AryaBit.AirCraft.Radio.Core
 
         #endregion
 
+        #region init
+
         public AircraftState() { }
 
         public AircraftState(byte rudderValue, byte aileronValue, byte elevatorValue, byte throtleValue)
@@ -187,6 +189,10 @@ namespace AryaBit.AirCraft.Radio.Core
         }
 
 
+        #endregion
+
+        #region Value
+
         public void SetValues(
             AircraftState aircraftState)
         {
@@ -195,6 +201,8 @@ namespace AryaBit.AirCraft.Radio.Core
             this.elevatorValue = aircraftState.elevatorValue;
             this.throtleValue = aircraftState.throtleValue;
         }
+
+        #endregion
 
     }
 
