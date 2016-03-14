@@ -55,22 +55,13 @@ namespace AryaBit.AirCraft.Radio.Core
 
         #region init
 
-        public RadioCommands()
+        public RadioCommands(SerialTransmitter sTransmitter)
         {
+            this.sTransmitter = sTransmitter;
             this.isSendingData = true;
 
             this.aircraftState = new AircraftState(
                 RUDDER_MINVALUE, AILERON_MINVALUE, ELEVATOR_MINVALUE, THROTLE_MINVALUE);
-        }
-
-        public void initComPort()
-        {
-            this.sTransmitter = new SerialTransmitter();
-        }
-
-        public void CloseComPort()
-        {
-            this.sTransmitter.Close();
         }
 
         #endregion
@@ -87,7 +78,7 @@ namespace AryaBit.AirCraft.Radio.Core
 
         #region Sending Data
 
-        private const int comDelay = 200;
+        private const int comDelay = 10;
         private void SendingThread()
         {
             this.lastSendTime = DateTime.Now;
@@ -100,7 +91,6 @@ namespace AryaBit.AirCraft.Radio.Core
                     SendChannelData(AILERON_CHANNELCODE, this.aircraftState.aileronValue);
                     SendChannelData(ELEVATOR_CHANNELCODE, this.aircraftState.elevatorValue);
                     SendChannelData(THROTLE_CHANNELCODE, this.aircraftState.throtleValue);
-                    Thread.Sleep(comDelay);
 
                     this.sendCount++;
 

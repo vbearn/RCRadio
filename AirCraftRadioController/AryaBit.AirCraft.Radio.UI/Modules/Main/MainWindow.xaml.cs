@@ -26,8 +26,16 @@ namespace AryaBit.AirCraft.Radio.UI
         #region Fields
 
         List<LogItem> logItems;
+
         private Radio.Core.RadioCommands rCommand;
+        private SerialTransmitter comTransmitter;
+        private bool comInitialized = false;
+
         private Joystick joystick;
+        private bool joystickInitialized = false;
+        private bool joystickSending = false;
+
+        private AircraftState lastAircraftState;
 
         #endregion
 
@@ -37,13 +45,15 @@ namespace AryaBit.AirCraft.Radio.UI
         {
             InitializeComponent();
 
-            AddLogItem("SYS", "App Started.");
             initModules();
 
         }
 
         private void initModules()
         {
+            AddLogItem("SYS", "App Started.");
+            lastAircraftState = new AircraftState(0, 0, 0, 0);
+
             AddLogItem("SYS", "Initializing modules...");
             logItems = new List<LogItem>();
 
@@ -51,11 +61,14 @@ namespace AryaBit.AirCraft.Radio.UI
             {
                 AddLogItem("SYS", "Initializing Joystick module...");
                 initJoystic();
+                joyLeft.XValue = 90;
                 joyLeft.YValue = 90;
+                joyRight.XValue = 90;
+                joyRight.YValue = 90;
             }
             catch (Exception)
             {
-                AddLogItem("SYS", "Joystick module initialization FAILED.");
+                AddLogItem("ERR", "Joystick module initialization FAILED.");
             }
 
             AddLogItem("SYS", "Modules initialized.");
@@ -65,64 +78,90 @@ namespace AryaBit.AirCraft.Radio.UI
 
         #region Radio
 
-        private object radioThreadLock = new object();
-
         private void btnComConnect_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                this.rCommand = new Core.RadioCommands();
-                this.rCommand.LogOccured += RCommand_LogOccured;
-                this.rCommand.initComPort();
-                btnComConnect.IsEnabled = false;
-                btnComDisconnect.IsEnabled = true;
+                string[] ports = SerialTransmitter.GetPortNames();
+                string portToConnect;
+                if (ports.Length == 1)
+                {
+                    portToConnect = ports[0];
+                }
+                else
+                {
+                    ShowError("COM connect failed. More than 1 COM port!");
+                    return;
+                }
+
+                this.comTransmitter = new SerialTransmitter(portToConnect);
+                this.comTransmitter.DateReceived += ComTransmitter_DateReceived;
+                this.comTransmitter.Open();
             }
             catch (Exception ex)
             {
                 this.rCommand = null;
                 ShowError("COM connection failed.");
+                return;
             }
 
+
+            this.rCommand = new Core.RadioCommands(comTransmitter);
+            this.rCommand.LogOccured += RCommand_LogOccured;
+
+            this.comInitialized = true;
+            SetUIButtonsLayout();
+        }
+
+        private void ComTransmitter_DateReceived(string connLog)
+        {
+            Application.Current.Dispatcher.Invoke(new Action(() =>
+            {
+                txtConnLog.Text += connLog;
+            }));
         }
 
         private void btnComDisconnect_Click(object sender, RoutedEventArgs e)
         {
+            this.comInitialized = false;
+
             try
             {
-                this.rCommand.CloseComPort();
-                this.rCommand = null;
-                btnComConnect.IsEnabled = true;
-                btnComDisconnect.IsEnabled = false;
+                this.comTransmitter.Close();
+
             }
             catch (Exception ex)
             {
                 ShowError("COM disconnect failed.");
             }
+
+
+            this.rCommand = null;
+            SetUIButtonsLayout();
         }
 
-        private void RCommand_LogOccured(string arg1, string arg2)
+        private void RCommand_LogOccured(string chan, string value)
         {
-            AddLogItem(arg1, arg2);
+            AddLogItem(chan, value);
         }
 
         #endregion
 
         #region Joystick
 
-        int lastY;
-        int lastX;
-        int lastRY;
-        int lastRX;
-
         private void initJoystic()
         {
-            joystick = new Joystick();
-            joystick.OnStateUpdated += Joystick_OnStateUpdated;
-            joystick.StartCapture();
+            this.joystick = new Joystick();
+            this.joystick.OnStateUpdated += Joystick_OnStateUpdated;
+            this.joystick.StartCapture();
+            this.joystickInitialized = true;
         }
 
         private void Joystick_OnStateUpdated(SlimDX.DirectInput.JoystickState state)
         {
+
+            if (!this.joystickInitialized)
+                return;
 
             AircraftState aircraftState = new AircraftState()
             {
@@ -133,60 +172,102 @@ namespace AryaBit.AirCraft.Radio.UI
 
             };
 
-            if (this.rCommand != null)
-                this.rCommand.SetAircraftValues(aircraftState);
-
             Application.Current.Dispatcher.Invoke(new Action(() =>
             {
-
-                if (state.X != lastX)
-                {
-                    lastX = state.X;
-                    sliderX.Value = aircraftState.rudderValue;
-                    joyLeft.XValue = aircraftState.rudderValue;
-                }
-
-                if (state.Y != lastY)
-                {
-                    lastY = state.Y;
-                    sliderY.Value = aircraftState.elevatorValue;
-                    joyLeft.YValue = aircraftState.elevatorValue;
-
-                }
-
-                if (state.RotationX != lastRX)
-                {
-                    lastRX = state.RotationX;
-                    sliderRX.Value = aircraftState.aileronValue;
-                    joyRight.XValue = aircraftState.aileronValue;
-                }
-
-                if (state.RotationY != lastRY)
-                {
-                    lastRY = state.RotationY;
-                    sliderRY.Value = aircraftState.throtleValue;
-                    joyRight.YValue = aircraftState.throtleValue;
-                }
-
-                if (this.rCommand != null)
-                    this.textBox.Text = this.rCommand.FPS.ToString();
+                SetControllerValues(aircraftState);
             }));
 
+            if (!this.joystickSending)
+                return;
+
+            if (this.rCommand != null)
+                this.rCommand.SetAircraftValues(aircraftState);
 
         }
 
         private void btnStartSendJoystic_Click(object sender, RoutedEventArgs e)
         {
-            rCommand.StartSendingThread();
-            btnStartSendJoystic.IsEnabled = false;
-            btnStopSendJoystic.IsEnabled = true;
+            if (!this.joystickInitialized)
+            {
+                ShowError("Joystick has not been initialized.");
+                return;
+            }
+
+            AddLogItem("SYS", "Starting to sending joystick values...");
+            this.rCommand.StartSendingThread();
+
+            this.joystickSending = true;
+
+            SetUIButtonsLayout();
         }
 
         private void btnStopSendJoystic_Click(object sender, RoutedEventArgs e)
         {
-            rCommand.StopSendingThread();
-            btnStartSendJoystic.IsEnabled = true;
-            btnStopSendJoystic.IsEnabled = false;
+            if (rCommand != null)
+                this.rCommand.StopSendingThread();
+
+            this.joystickSending = false;
+
+            SetUIButtonsLayout();
+
+            AddLogItem("SYS", "Stopped sending joystick values.");
+        }
+
+        #endregion
+
+        #region UI
+
+        private void SetControllerValues(AircraftState aircraftState)
+        {
+
+            try
+            {
+                if (aircraftState.rudderValue != this.lastAircraftState.rudderValue)
+                {
+                    sliderX.Value = aircraftState.rudderValue;
+                    joyLeft.XValue = aircraftState.rudderValue;
+                }
+
+                if (aircraftState.elevatorValue != this.lastAircraftState.elevatorValue)
+                {
+                    sliderY.Value = aircraftState.elevatorValue;
+                    joyLeft.YValue = aircraftState.elevatorValue;
+
+                }
+
+                if (aircraftState.aileronValue != this.lastAircraftState.aileronValue)
+                {
+                    sliderRX.Value = aircraftState.aileronValue;
+                    joyRight.XValue = aircraftState.aileronValue;
+                }
+
+                if (aircraftState.throtleValue != this.lastAircraftState.throtleValue)
+                {
+                    sliderRY.Value = aircraftState.throtleValue;
+                    joyRight.YValue = aircraftState.throtleValue;
+                }
+
+                this.lastAircraftState = aircraftState;
+
+                if (this.rCommand != null)
+                    this.textBox.Text = this.rCommand.FPS.ToString();
+            }
+            catch (Exception ex)
+            {
+                AddLogItem("ERR", "Error in SetControllerValues" + ex.ToString());
+            }
+
+        }
+
+        private void SetUIButtonsLayout()
+        {
+
+            btnComConnect.IsEnabled = !this.comInitialized;
+            btnComDisconnect.IsEnabled = this.comInitialized;
+
+            btnStartSendJoystic.IsEnabled = !this.joystickSending;
+            btnStopSendJoystic.IsEnabled = this.joystickSending;
+
         }
 
         #endregion
@@ -195,6 +276,7 @@ namespace AryaBit.AirCraft.Radio.UI
 
         private void ShowError(string error)
         {
+            AddLogItem("ERR", error);
             MessageBox.Show(error, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
         }
 
@@ -255,7 +337,6 @@ namespace AryaBit.AirCraft.Radio.UI
         }
 
         #endregion
-
 
     }
 

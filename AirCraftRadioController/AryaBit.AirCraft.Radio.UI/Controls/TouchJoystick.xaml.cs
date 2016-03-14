@@ -81,7 +81,6 @@ namespace AryaBit.AirCraft.Radio.UI.Controls
         private double CalculateXLeft(double controlWidth)
         {
             double x = (this.Width / 2 - controlWidth / 2) + (((this.xValue - this.maxXValue / 2) / (this.maxXValue / 2)) * this.Width / (double)5.5);
-            Console.WriteLine(x);
             return x;
         }
     }
