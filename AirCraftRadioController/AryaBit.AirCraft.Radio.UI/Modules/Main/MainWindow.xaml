@@ -17,18 +17,17 @@
         </Grid.ColumnDefinitions>
 
 
-        <ListView x:Name="listView" HorizontalAlignment="Left" Height="188" Margin="184,472,0,0" VerticalAlignment="Top" Width="987" Background="{x:Null}">
+        <ListView x:Name="listView" HorizontalAlignment="Left" Height="188" Margin="184,472,0,0" VerticalAlignment="Top" Width="682" Background="{x:Null}" BorderBrush="#FF002DC5">
+            <ListView.Resources>
+                <Style TargetType="{x:Type GridViewColumnHeader}">
+                    <Setter Property="HorizontalContentAlignment" Value="Left" />
+                </Style>
+            </ListView.Resources>
             <ListView.View>
                 <GridView>
                     <GridViewColumn Header="Time" Width="180" DisplayMemberBinding="{Binding Time}" />
-                    <GridViewColumn Header="Channel" Width="50" DisplayMemberBinding="{Binding Channel}" />
-                    <GridViewColumn Header="Value" Width="150">
-                        <GridViewColumn.CellTemplate>
-                            <DataTemplate>
-                                <TextBlock Text="{Binding Value}" TextDecorations="Underline" />
-                            </DataTemplate>
-                        </GridViewColumn.CellTemplate>
-                    </GridViewColumn>
+                    <GridViewColumn Header="Channel" Width="70" DisplayMemberBinding="{Binding Channel}" />
+                    <GridViewColumn Header="Value" Width="400" DisplayMemberBinding="{Binding Value}" />
                 </GridView>
             </ListView.View>
         </ListView>
@@ -67,7 +66,7 @@
 
         <Controls:TouchJoystick x:Name="joyLeft" HorizontalAlignment="Left" Margin="43,281,0,0" VerticalAlignment="Top" Width="150" Height="150"/>
         <Controls:TouchJoystick x:Name="joyRight" HorizontalAlignment="Left" Margin="1166,281,0,0" VerticalAlignment="Top" Width="150" Height="150" Grid.ColumnSpan="2"/>
-        <TextBox x:Name="txtConnLog" HorizontalAlignment="Left" Height="150" Margin="198,281,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="300"/>
+        <TextBox x:Name="txtConnLog" HorizontalAlignment="Left" Height="188" Margin="871,472,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="300" Background="{x:Null}" BorderBrush="#FF002DC5"/>
 
     </Grid>
 </Window>

@@ -76,7 +76,9 @@
     <Compile Include="Controls\TouchJoystick.xaml.cs">
       <DependentUpon>TouchJoystick.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Helpers\DragHandler.cs" />
     <Compile Include="Modules\Input\Joystick.cs" />
+    <Compile Include="Modules\Logic\AircraftRadioLogic.cs" />
     <Compile Include="Modules\Main\MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>

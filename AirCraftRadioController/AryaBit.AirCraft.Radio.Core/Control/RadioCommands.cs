@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace AryaBit.AirCraft.Radio.Core
 {
 
-    public class RadioCommands
+    public class RadioCommands : IDisposable
     {
 
         #region Constants
@@ -33,9 +33,11 @@ namespace AryaBit.AirCraft.Radio.Core
         public const byte THROTLE_MAXVALUE = 180;
         public const byte THROTLE_CHANNELCODE = 4;
 
+        private const int COM_DELAY = 10;
+
         #endregion
 
-        #region Fields 
+        #region Fields
 
         //**** Aircraft State *****
         AircraftState aircraftState;
@@ -64,6 +66,11 @@ namespace AryaBit.AirCraft.Radio.Core
                 RUDDER_MINVALUE, AILERON_MINVALUE, ELEVATOR_MINVALUE, THROTLE_MINVALUE);
         }
 
+        public void Dispose()
+        {
+            this.isSendingData = false;
+        }
+
         #endregion
 
         #region Aircraft State
@@ -78,36 +85,32 @@ namespace AryaBit.AirCraft.Radio.Core
 
         #region Sending Data
 
-        private const int comDelay = 10;
         private void SendingThread()
         {
             this.lastSendTime = DateTime.Now;
 
             while (true)
             {
-                if (this.isSendingData)
+                if (!this.isSendingData)
+                    return;
+
+                SendChannelData(RUDDER_CHANNELCODE, this.aircraftState.rudderValue);
+                SendChannelData(AILERON_CHANNELCODE, this.aircraftState.aileronValue);
+                SendChannelData(ELEVATOR_CHANNELCODE, this.aircraftState.elevatorValue);
+                SendChannelData(THROTLE_CHANNELCODE, this.aircraftState.throtleValue);
+
+                this.sendCount++;
+
+                TimeSpan pastTime = DateTime.Now - this.lastSendTime;
+                if (pastTime.TotalMilliseconds > 1000)
                 {
-                    SendChannelData(RUDDER_CHANNELCODE, this.aircraftState.rudderValue);
-                    SendChannelData(AILERON_CHANNELCODE, this.aircraftState.aileronValue);
-                    SendChannelData(ELEVATOR_CHANNELCODE, this.aircraftState.elevatorValue);
-                    SendChannelData(THROTLE_CHANNELCODE, this.aircraftState.throtleValue);
-
-                    this.sendCount++;
-
-                    TimeSpan pastTime = DateTime.Now - this.lastSendTime;
-                    if (pastTime.TotalMilliseconds > 1000)
-                    {
-                        this.lastSendTime = DateTime.Now;
-                        this.FPS = (float)this.sendCount / (float)(pastTime.TotalMilliseconds / (double)1000);
-                        this.sendCount = 0;
-                    }
-
-                    Thread.Sleep(comDelay);
+                    this.lastSendTime = DateTime.Now;
+                    this.FPS = (float)this.sendCount / (float)(pastTime.TotalMilliseconds / (double)1000);
+                    this.sendCount = 0;
                 }
-                else
-                {
-                    Thread.Sleep(20);
-                }
+
+                Thread.Sleep(COM_DELAY);
+
             }
         }
 
@@ -153,7 +156,7 @@ namespace AryaBit.AirCraft.Radio.Core
 
     public class AircraftState
     {
-        #region Fields 
+        #region Fields
 
         //**** Aircraft State Values *****
         public byte rudderValue = 0;
@@ -183,14 +186,25 @@ namespace AryaBit.AirCraft.Radio.Core
 
         #region Value
 
-        public void SetValues(
-            AircraftState aircraftState)
+        public void SetValues(AircraftState aircraftState)
         {
             this.rudderValue = aircraftState.rudderValue;
             this.aileronValue = aircraftState.aileronValue;
             this.elevatorValue = aircraftState.elevatorValue;
             this.throtleValue = aircraftState.throtleValue;
         }
+
+        public AircraftState Clone()
+        {
+            return new AircraftState()
+            {
+                rudderValue = this.rudderValue,
+                aileronValue = this.aileronValue,
+                elevatorValue = this.elevatorValue,
+                throtleValue = this.throtleValue
+            };
+        }
+
 
         #endregion
 
