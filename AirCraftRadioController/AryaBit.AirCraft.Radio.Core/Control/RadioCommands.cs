@@ -13,34 +13,26 @@ namespace AryaBit.AirCraft.Radio.Core
 
         #region Constants
 
+        private const bool DEBUG_MODE = false;
+        private byte[] DEBUG_LOG_CHANNELS = new byte[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
+        public byte[] DEBUG_SEND_CHANNELS = new byte[] {  };
+
         private const byte CHANNEL_RESERVED_BYTES = 9;
         private const byte VALUE_RESERVED_BYTES = 10;
         private const byte COMMAND_SEPARATOR = 244;
 
-        public const byte RUDDER_MINVALUE = 0;
-        public const byte RUDDER_MAXVALUE = 180;
-        public const byte RUDDER_CHANNELCODE = 1;
+        private const float FPS_MAXLIMIT = 20;
 
-        public const byte AILERON_MINVALUE = 0;
-        public const byte AILERON_MAXVALUE = 180;
-        public const byte AILERON_CHANNELCODE = 2;
 
-        public const byte ELEVATOR_MINVALUE = 0;
-        public const byte ELEVATOR_MAXVALUE = 180;
-        public const byte ELEVATOR_CHANNELCODE = 3;
-
-        public const byte THROTLE_MINVALUE = 0;
-        public const byte THROTLE_MAXVALUE = 180;
-        public const byte THROTLE_CHANNELCODE = 4;
-
-        private const int COM_DELAY = 10;
+        //private const int COM_DELAY = 10;
 
         #endregion
 
         #region Fields
 
         //**** Aircraft State *****
-        AircraftState aircraftState;
+        private AircraftState aircraftState = null;
+        private RadioConfigurations config;
 
         //**** Transmitter *****
         private SerialTransmitter sTransmitter;
@@ -48,22 +40,29 @@ namespace AryaBit.AirCraft.Radio.Core
 
         //**** Performance *****
         public float FPS = 0;
+        private DateTime lastFPSTime = DateTime.MinValue;
         private DateTime lastSendTime = DateTime.MinValue;
         private int sendCount = 0;
+        public int totalSendCount = 0;
+
+        #endregion
+
+        #region Events
 
         public event Action<string, string> LogOccured;
+        public event Action DisconnectOccured;
 
         #endregion
 
         #region init
 
-        public RadioCommands(SerialTransmitter sTransmitter)
+        public RadioCommands(SerialTransmitter sTransmitter, RadioConfigurations config)
         {
             this.sTransmitter = sTransmitter;
+            this.config = config;
+
             this.isSendingData = true;
 
-            this.aircraftState = new AircraftState(
-                RUDDER_MINVALUE, AILERON_MINVALUE, ELEVATOR_MINVALUE, THROTLE_MINVALUE);
         }
 
         public void Dispose()
@@ -78,6 +77,9 @@ namespace AryaBit.AirCraft.Radio.Core
         public void SetAircraftValues(
             AircraftState aircraftState)
         {
+            if (this.aircraftState == null)
+                this.aircraftState = new AircraftState();
+
             this.aircraftState.SetValues(aircraftState);
         }
 
@@ -88,28 +90,116 @@ namespace AryaBit.AirCraft.Radio.Core
         private void SendingThread()
         {
             this.lastSendTime = DateTime.Now;
+            this.lastFPSTime = DateTime.Now;
 
-            while (true)
+            try
             {
-                if (!this.isSendingData)
-                    return;
-
-                SendChannelData(RUDDER_CHANNELCODE, this.aircraftState.rudderValue);
-                SendChannelData(AILERON_CHANNELCODE, this.aircraftState.aileronValue);
-                SendChannelData(ELEVATOR_CHANNELCODE, this.aircraftState.elevatorValue);
-                SendChannelData(THROTLE_CHANNELCODE, this.aircraftState.throtleValue);
-
-                this.sendCount++;
-
-                TimeSpan pastTime = DateTime.Now - this.lastSendTime;
-                if (pastTime.TotalMilliseconds > 1000)
+                while (true)
                 {
-                    this.lastSendTime = DateTime.Now;
-                    this.FPS = (float)this.sendCount / (float)(pastTime.TotalMilliseconds / (double)1000);
-                    this.sendCount = 0;
-                }
+                    if (!this.isSendingData)
+                        return;
 
-                Thread.Sleep(COM_DELAY);
+                    bool doTransmit = true;
+
+                    // *** Cycle Time ***
+                    TimeSpan pastCycleTime = DateTime.Now - this.lastSendTime;
+                    if (pastCycleTime.TotalMilliseconds < ((float)1000 / FPS_MAXLIMIT))
+                    {
+                        //Thread.Sleep(200);
+                        doTransmit = false;
+                    }
+
+                    #region Transmit
+
+                    if (doTransmit)
+                    {
+                        this.totalSendCount++;
+                        this.sendCount++;
+                        this.lastSendTime = DateTime.Now;
+                        //Console.WriteLine(pastTime.TotalMilliseconds + " #" + this.sendCount);
+
+                        this.sTransmitter.StartBuffer();
+
+                        AddBufferChannelData(this.config.Throtle_ChannelCode, this.aircraftState.throtleValue);
+
+                        // *** Aileron ***
+                        if (this.config.AileronControl == AileronMode.SingleMode)
+                        {
+                            AddBufferChannelData(this.config.Aileron_ChannelCode1, this.aircraftState.aileronValue);
+                            AddBufferChannelData(this.config.Aileron_ChannelCode2, 0);
+                        }
+                        else
+                        {
+                            AddBufferChannelData(this.config.Aileron_ChannelCode1, (byte)(this.aircraftState.aileronValue + this.config.Aileron_Offset1));
+                            AddBufferChannelData(this.config.Aileron_ChannelCode2, (byte)(this.aircraftState.aileronValue + this.config.Aileron_Offset2));
+                            //AddBufferChannelData(this.config.Aileron_ChannelCode2,
+                            //   (byte)(this.config.Aileron_MaxValue - (this.aircraftState.aileronValue - this.config.Aileron_MinValue)));
+                        }
+                        // ****************
+
+                        // *** Elevator ***
+                        if (this.config.ElevatorControl == ElevatorMode.SingleMode)
+                        {
+                            AddBufferChannelData(this.config.Elevator_ChannelCode1, this.aircraftState.elevatorValue1);
+                            AddBufferChannelData(this.config.Elevator_ChannelCode2, 0);
+                        }
+                        else
+                        {
+                            AddBufferChannelData(this.config.Elevator_ChannelCode1, this.aircraftState.elevatorValue1);
+                            AddBufferChannelData(this.config.Elevator_ChannelCode2, this.aircraftState.elevatorValue2);
+
+                            //byte elevChan2Val = (byte)(this.aircraftState.elevatorValue + this.config.Elevator_Offset2);
+                            //if (this.config.Elevator_ReverseLeftRight)
+                            //    elevChan2Val = (byte)(this.config.Elevator_MaxValue - (elevChan2Val - this.config.Elevator_MinValue));
+                        }
+                        // **************
+
+                        // *** Rudder ***
+                        if (this.config.RudderControl == RudderMode.SingleMode)
+                        {
+                            AddBufferChannelData(this.config.Rudder_ChannelCode1, this.aircraftState.rudderValue);
+                            AddBufferChannelData(this.config.Rudder_ChannelCode2, 0);
+                        }
+                        else
+                        {
+                            AddBufferChannelData(this.config.Rudder_ChannelCode1, this.aircraftState.rudderValue);
+                            AddBufferChannelData(this.config.Rudder_ChannelCode2, this.aircraftState.rudderValue);
+                        }
+                        // *************
+
+
+                        for (int tempChannelIndex = 8; tempChannelIndex <= 10; tempChannelIndex++)
+                        {
+                            AddBufferChannelData((byte)tempChannelIndex, 0);
+                        }
+
+                        this.sTransmitter.SendBuffer();
+                    }
+
+                    #endregion
+
+
+                    // *** FPS ***
+                    TimeSpan pastFPSTime = DateTime.Now - this.lastFPSTime;
+                    if (pastFPSTime.TotalMilliseconds > 1000)
+                    {
+                        this.lastFPSTime = DateTime.Now;
+                        this.FPS = (float)this.sendCount / (float)(pastFPSTime.TotalMilliseconds / (double)1000);
+                        this.sendCount = 0;
+                    }
+
+
+                    Thread.Sleep(30);
+
+                }
+            }
+            catch (Exception ex)
+            {
+                if (ex is InvalidOperationException)
+                {
+                    if (DisconnectOccured != null)
+                        DisconnectOccured();
+                }
 
             }
         }
@@ -128,8 +218,13 @@ namespace AryaBit.AirCraft.Radio.Core
             this.isSendingData = false;
         }
 
-        public void SendChannelData(byte channelNumber, byte value)
+        public void AddBufferChannelData(byte channelNumber, byte value)
         {
+            if (DEBUG_MODE)
+            {
+                if (!DEBUG_SEND_CHANNELS.Contains(channelNumber))
+                    return;
+            }
 
             if (channelNumber + CHANNEL_RESERVED_BYTES > 255 || channelNumber < 1)
                 throw new ArgumentException("Invalid Channel Number");
@@ -142,11 +237,17 @@ namespace AryaBit.AirCraft.Radio.Core
 
             byte[] commandBuffer = new byte[3] { COMMAND_SEPARATOR, convertedChannelNumber, convertedValue };
 
-            this.sTransmitter.SendData2Bytes(commandBuffer);
+            this.sTransmitter.AddBuffer(commandBuffer);
 
-            if (LogOccured != null)
-                LogOccured(channelNumber.ToString(), value.ToString());
+            if (DEBUG_MODE)
+            {
+                if (LogOccured != null)
+                {
+                    if (DEBUG_LOG_CHANNELS.Contains(channelNumber))
+                        LogOccured(channelNumber.ToString(), value.ToString());
+                }
 
+            }
 
         }
 
@@ -161,7 +262,9 @@ namespace AryaBit.AirCraft.Radio.Core
         //**** Aircraft State Values *****
         public byte rudderValue = 0;
         public byte aileronValue = 0;
-        public byte elevatorValue = 0;
+        public int elevatorValueRaw = 0;
+        public byte elevatorValue1 = 0;
+        public byte elevatorValue2 = 0;
         public byte throtleValue = 0;
 
         #endregion
@@ -170,16 +273,17 @@ namespace AryaBit.AirCraft.Radio.Core
 
         public AircraftState() { }
 
-        public AircraftState(byte rudderValue, byte aileronValue, byte elevatorValue, byte throtleValue)
-        {
-            SetValues(new AircraftState()
-            {
-                rudderValue = rudderValue,
-                aileronValue = aileronValue,
-                elevatorValue = elevatorValue,
-                throtleValue = throtleValue
-            });
-        }
+        //public AircraftState(byte rudderValue, byte aileronValue, byte elevatorValue1, byte elevatorValue2, byte throtleValue)
+        //{
+        //    SetValues(new AircraftState()
+        //    {
+        //        rudderValue = rudderValue,
+        //        aileronValue = aileronValue,
+        //        elevatorValue1 = elevatorValue1,
+        //        elevatorValue2 = elevatorValue2,
+        //        throtleValue = throtleValue
+        //    });
+        //}
 
 
         #endregion
@@ -190,19 +294,17 @@ namespace AryaBit.AirCraft.Radio.Core
         {
             this.rudderValue = aircraftState.rudderValue;
             this.aileronValue = aircraftState.aileronValue;
-            this.elevatorValue = aircraftState.elevatorValue;
+            this.elevatorValueRaw = aircraftState.elevatorValueRaw;
+            this.elevatorValue1 = aircraftState.elevatorValue1;
+            this.elevatorValue2 = aircraftState.elevatorValue2;
             this.throtleValue = aircraftState.throtleValue;
         }
 
         public AircraftState Clone()
         {
-            return new AircraftState()
-            {
-                rudderValue = this.rudderValue,
-                aileronValue = this.aileronValue,
-                elevatorValue = this.elevatorValue,
-                throtleValue = this.throtleValue
-            };
+            AircraftState clone = new AircraftState();
+            clone.SetValues(this);
+            return clone;
         }
 
 

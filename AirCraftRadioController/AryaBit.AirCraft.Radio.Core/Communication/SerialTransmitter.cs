@@ -15,14 +15,18 @@ namespace AryaBit.AirCraft.Radio.Core
 
         private SerialPort port;
         public event Action<string> DateReceived;
+
+        private List<byte> bufferToWrite;
+
         #endregion
 
         #region init
 
         public SerialTransmitter(string portToConnect)
         {
-            port = new SerialPort(portToConnect, 57600, Parity.None, 8, StopBits.One);
+            port = new SerialPort(portToConnect, 115200, Parity.None, 8, StopBits.One);
             port.DataReceived += new SerialDataReceivedEventHandler(DataReceivedHandler);
+
         }
 
         public void Open()
@@ -41,19 +45,37 @@ namespace AryaBit.AirCraft.Radio.Core
 
         private void DataReceivedHandler(object sender, SerialDataReceivedEventArgs e)
         {
-            if (DateReceived != null)
             {
                 SerialPort sp = (SerialPort)sender;
                 string indata = sp.ReadExisting();
-                DateReceived(indata);
+                //Console.WriteLine(indata);
+                foreach (var item in indata)
+                    Console.Write((int)((byte)item) + ", ");
+                Console.WriteLine("");
+                if (DateReceived != null)
+                    DateReceived(indata);
             }
-            
+
 
         }
 
-        public void SendData2Bytes(byte[] buffer)
+
+        public void StartBuffer()
         {
-            port.Write(buffer, 0, 3);
+            this.bufferToWrite = new List<byte>();
+        }
+        public void AddBuffer(byte[] buffer)
+        {
+            this.bufferToWrite.AddRange(buffer);
+        }
+
+
+        public void SendBuffer()
+        {
+            port.Write(this.bufferToWrite.ToArray(), 0, bufferToWrite.Count);
+
+            //Console.WriteLine((int)buffer[1] + "," + (int)buffer[2]);
+            //System.Threading.Thread.Sleep(100);
         }
 
         #endregion

@@ -61,7 +61,23 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Page Include="Controls\InputDialog.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\Plot.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Controls\TouchJoystick.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\TuneSlider.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\VTailViewer.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -73,12 +89,22 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Controls\InputDialog.xaml.cs">
+      <DependentUpon>InputDialog.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\Plot.xaml.cs">
+      <DependentUpon>Plot.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Controls\TouchJoystick.xaml.cs">
       <DependentUpon>TouchJoystick.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Controls\TuneSlider.xaml.cs">
+      <DependentUpon>TuneSlider.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\VTailViewer.xaml.cs">
+      <DependentUpon>VTailViewer.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Helpers\DragHandler.cs" />
-    <Compile Include="Modules\Input\Joystick.cs" />
-    <Compile Include="Modules\Logic\AircraftRadioLogic.cs" />
     <Compile Include="Modules\Main\MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>

@@ -7,6 +7,12 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AryaBit.AirCraft.Radio.Core
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AryaBit.AirCraft.Radio.UI", "AryaBit.AirCraft.Radio.UI\AryaBit.AirCraft.Radio.UI.csproj", "{86BB66A7-2D0D-4EFE-9AF2-7AF7AADCB095}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AryaBit.AirCraft.Radio.Test", "Aryabit.AirCraft.Radio.Test\AryaBit.AirCraft.Radio.Test.csproj", "{E2178FEC-4BE7-4BBF-AAB3-AFA4FFD8C4E5}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Main", "Main", "{F65D621E-C979-4F9B-96A3-874725FA10AF}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Test", "Test", "{8B1E7A98-1623-46DD-AB9C-B8668227826E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,20 +27,35 @@ Global
 		{86BB66A7-2D0D-4EFE-9AF2-7AF7AADCB095}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{86BB66A7-2D0D-4EFE-9AF2-7AF7AADCB095}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{86BB66A7-2D0D-4EFE-9AF2-7AF7AADCB095}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E2178FEC-4BE7-4BBF-AAB3-AFA4FFD8C4E5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E2178FEC-4BE7-4BBF-AAB3-AFA4FFD8C4E5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E2178FEC-4BE7-4BBF-AAB3-AFA4FFD8C4E5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E2178FEC-4BE7-4BBF-AAB3-AFA4FFD8C4E5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{074DEB84-B6C8-4963-958C-A7D22C696500} = {F65D621E-C979-4F9B-96A3-874725FA10AF}
+		{86BB66A7-2D0D-4EFE-9AF2-7AF7AADCB095} = {F65D621E-C979-4F9B-96A3-874725FA10AF}
+		{E2178FEC-4BE7-4BBF-AAB3-AFA4FFD8C4E5} = {8B1E7A98-1623-46DD-AB9C-B8668227826E}
+	EndGlobalSection
 	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 3
+		SccNumberOfProjects = 4
 		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
 		SccTeamFoundationServer = https://vbearn.visualstudio.com/defaultcollection
 		SccLocalPath0 = .
 		SccProjectUniqueName1 = AryaBit.AirCraft.Radio.Core\\AryaBit.AirCraft.Radio.Core.csproj
+		SccProjectTopLevelParentUniqueName1 = AryaBit.AirCraft.Radio.sln
 		SccProjectName1 = AryaBit.AirCraft.Radio.Core
 		SccLocalPath1 = AryaBit.AirCraft.Radio.Core
 		SccProjectUniqueName2 = AryaBit.AirCraft.Radio.UI\\AryaBit.AirCraft.Radio.UI.csproj
+		SccProjectTopLevelParentUniqueName2 = AryaBit.AirCraft.Radio.sln
 		SccProjectName2 = AryaBit.AirCraft.Radio.UI
 		SccLocalPath2 = AryaBit.AirCraft.Radio.UI
+		SccProjectUniqueName3 = Aryabit.AirCraft.Radio.Test\\AryaBit.AirCraft.Radio.Test.csproj
+		SccProjectTopLevelParentUniqueName3 = AryaBit.AirCraft.Radio.sln
+		SccProjectName3 = Aryabit.AirCraft.Radio.Test
+		SccLocalPath3 = Aryabit.AirCraft.Radio.Test
 	EndGlobalSection
 EndGlobal

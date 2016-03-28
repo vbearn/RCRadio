@@ -28,7 +28,27 @@ namespace AryaBit.AirCraft.Radio.UI.Controls
         }
 
         private double maxXValue = 180;
+        public double MaxXValue
+        {
+            get { return this.maxXValue; }
+            set
+            {
+                this.maxXValue = value;
+                SetControlPositions();
+            }
+        }
+
         private double maxYValue = 180;
+        public double MaxYValue
+        {
+            get { return this.maxYValue; }
+            set
+            {
+                this.maxYValue = value;
+                SetControlPositions();
+            }
+        }
+
         private double xValue = 0;
         public double XValue
         {

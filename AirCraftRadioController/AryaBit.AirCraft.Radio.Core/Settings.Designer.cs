@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace AryaBit.AirCraft.Radio.UI.Properties {
+namespace AryaBit.AirCraft.Radio.Core {
     
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
@@ -20,6 +20,18 @@ namespace AryaBit.AirCraft.Radio.UI.Properties {
         public static Settings Default {
             get {
                 return defaultInstance;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string RadioConfig {
+            get {
+                return ((string)(this["RadioConfig"]));
+            }
+            set {
+                this["RadioConfig"] = value;
             }
         }
     }

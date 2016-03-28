@@ -6,12 +6,14 @@ using System.Threading.Tasks;
 using SlimDX.DirectInput;
 using System.Threading;
 
-namespace AryaBit.AirCraft.Radio.UI
+namespace AryaBit.AirCraft.Radio.Core
 {
     class Joystick : IDisposable
     {
 
         #region Fields
+
+        public const double JOYSTICK_MAXVALUE = 65533;
 
         DirectInput directInput = new DirectInput();
         SlimDX.DirectInput.Joystick gamepad;
@@ -98,7 +100,7 @@ namespace AryaBit.AirCraft.Radio.UI
                 }
                 catch (Exception ex) { }
 
-                Thread.Sleep(30);
+                Thread.Sleep(50);
             }
 
         }

@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:AryaBit.AirCraft.Radio.UI"
         xmlns:Controls="clr-namespace:AryaBit.AirCraft.Radio.UI.Controls" x:Class="AryaBit.AirCraft.Radio.UI.MainWindow"
         mc:Ignorable="d"
-        Title="RC Aircraft Radio Controller" Height="768" Width="1366" WindowStartupLocation="CenterScreen" ResizeMode="CanMinimize" WindowStyle="None" AllowsTransparency="True">
+        Title="RC Aircraft Radio Controller" Height="699" Width="1366" WindowStartupLocation="CenterScreen" ResizeMode="CanMinimize" WindowStyle="None" AllowsTransparency="True">
     <Window.Background>
         <ImageBrush ImageSource="/AryaBit.AirCraft.Radio.UI;component/Resources/MainUI.png" />
     </Window.Background>
@@ -17,7 +17,7 @@
         </Grid.ColumnDefinitions>
 
 
-        <ListView x:Name="listView" HorizontalAlignment="Left" Height="188" Margin="184,472,0,0" VerticalAlignment="Top" Width="682" Background="{x:Null}" BorderBrush="#FF002DC5">
+        <ListView x:Name="listView" HorizontalAlignment="Left" Height="116" Margin="172,474,0,0" VerticalAlignment="Top" Width="790" Background="{x:Null}" BorderBrush="#FF002DC5">
             <ListView.Resources>
                 <Style TargetType="{x:Type GridViewColumnHeader}">
                     <Setter Property="HorizontalContentAlignment" Value="Left" />
@@ -26,47 +26,47 @@
             <ListView.View>
                 <GridView>
                     <GridViewColumn Header="Time" Width="180" DisplayMemberBinding="{Binding Time}" />
-                    <GridViewColumn Header="Channel" Width="70" DisplayMemberBinding="{Binding Channel}" />
-                    <GridViewColumn Header="Value" Width="400" DisplayMemberBinding="{Binding Value}" />
+                    <GridViewColumn Header="Type" Width="70" DisplayMemberBinding="{Binding Type}" />
+                    <GridViewColumn Header="Message" Width="400" DisplayMemberBinding="{Binding Message}" />
                 </GridView>
             </ListView.View>
         </ListView>
-        <Button x:Name="btnTestChan1" Content="Test Send Chan #1" HorizontalAlignment="Left" Margin="1206,491,0,0" VerticalAlignment="Top" Width="120" Click="btnTestChan1_Click" Height="23" Grid.ColumnSpan="2"/>
-        <Slider x:Name="sliderY" HorizontalAlignment="Left" Margin="43,340,0,0" VerticalAlignment="Top" Width="100" RenderTransformOrigin="0.5,0.5" Maximum="180">
-            <Slider.RenderTransform>
-                <TransformGroup>
-                    <ScaleTransform/>
-                    <SkewTransform/>
-                    <RotateTransform Angle="90"/>
-                    <TranslateTransform/>
-                </TransformGroup>
-            </Slider.RenderTransform>
-        </Slider>
-        <Slider x:Name="sliderX" HorizontalAlignment="Left" Margin="43,340,0,0" VerticalAlignment="Top" Width="100" Maximum="180"/>
-        <Slider x:Name="sliderRY" HorizontalAlignment="Left" Margin="1206,340,0,0" VerticalAlignment="Top" Width="100" RenderTransformOrigin="0.5,0.5" Maximum="180" Grid.ColumnSpan="2">
-            <Slider.RenderTransform>
-                <TransformGroup>
-                    <ScaleTransform/>
-                    <SkewTransform/>
-                    <RotateTransform Angle="90"/>
-                    <TranslateTransform/>
-                </TransformGroup>
-            </Slider.RenderTransform>
-        </Slider>
-        <Slider x:Name="sliderRX" HorizontalAlignment="Left" Margin="1206,340,0,0" VerticalAlignment="Top" Width="100" Maximum="180" Grid.ColumnSpan="2"/>
-        <Button x:Name="btnComConnect" Content="COM Connect" HorizontalAlignment="Left" Margin="23,494,0,0" VerticalAlignment="Top" Width="120" Click="btnComConnect_Click"/>
-        <Button x:Name="btnStartSendJoystic" Content="Start Send Joystick" HorizontalAlignment="Left" Margin="23,580,0,0" VerticalAlignment="Top" Width="120" Click="btnStartSendJoystic_Click"/>
-        <Label x:Name="label" Content="Com Sends/Sec                " HorizontalAlignment="Left" Margin="20,545,0,0" VerticalAlignment="Top" Foreground="#FFFFD6D6"/>
-        <TextBox x:Name="textBox" HorizontalAlignment="Left" Height="23" Margin="113,545,0,0" TextWrapping="Wrap" Text="0" VerticalAlignment="Top" Width="38"/>
-        <Button x:Name="btnStopSendJoystic" Content="Stop Send Joystick" HorizontalAlignment="Left" Margin="23,605,0,0" VerticalAlignment="Top" Width="120" Click="btnStopSendJoystic_Click" IsEnabled="False" RenderTransformOrigin="0.5,0.5"/>
-        <Button x:Name="btnTestChan2" Content="Test Send Chan #2" HorizontalAlignment="Left" Margin="1206,519,0,0" VerticalAlignment="Top" Width="120" Click="btnTestChan2_Click" Height="23" Grid.ColumnSpan="2"/>
-        <Button x:Name="btnTestChan3" Content="Test Send Chan #3" HorizontalAlignment="Left" Margin="1206,547,0,0" VerticalAlignment="Top" Width="120" Click="btnTestChan3_Click" Height="23" Grid.ColumnSpan="2"/>
-        <Button x:Name="btnTestChan4" Content="Test Send Chan #4" HorizontalAlignment="Left" Margin="1206,575,0,0" VerticalAlignment="Top" Width="120" Click="btnTestChan4_Click" Height="23" Grid.ColumnSpan="2"/>
-        <Button x:Name="btnComDisconnect" Content="COM Disconnect" HorizontalAlignment="Left" Margin="23,519,0,0" VerticalAlignment="Top" Width="120" Click="btnComDisconnect_Click" IsEnabled="False"/>
+        <Button x:Name="btnComConnect" Content="COM Connect &amp; Send" HorizontalAlignment="Left" Margin="23,408,0,0" VerticalAlignment="Top" Width="128" Click="btnComConnect_Click"/>
+        <Label x:Name="label" Content="Com Sends/Sec                " HorizontalAlignment="Left" Margin="20,456,0,0" VerticalAlignment="Top" Foreground="#FFFFD6D6" Width="93"/>
+        <TextBox x:Name="textBox" HorizontalAlignment="Left" Height="23" Margin="113,459,0,0" TextWrapping="Wrap" Text="0" VerticalAlignment="Top" Width="38"/>
+        <Button x:Name="btnComDisconnect" Content="Disconnect" HorizontalAlignment="Left" Margin="23,433,0,0" VerticalAlignment="Top" Width="128" Click="btnComDisconnect_Click" IsEnabled="False"/>
 
-        <Controls:TouchJoystick x:Name="joyLeft" HorizontalAlignment="Left" Margin="43,281,0,0" VerticalAlignment="Top" Width="150" Height="150"/>
-        <Controls:TouchJoystick x:Name="joyRight" HorizontalAlignment="Left" Margin="1166,281,0,0" VerticalAlignment="Top" Width="150" Height="150" Grid.ColumnSpan="2"/>
-        <TextBox x:Name="txtConnLog" HorizontalAlignment="Left" Height="188" Margin="871,472,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="300" Background="{x:Null}" BorderBrush="#FF002DC5"/>
+        <Controls:TouchJoystick x:Name="joyLeft" HorizontalAlignment="Left" Margin="43,201,0,0" VerticalAlignment="Top" Width="150" Height="150"/>
+        <Controls:TouchJoystick x:Name="joyRight" HorizontalAlignment="Left" Margin="1166,201,0,0" VerticalAlignment="Top" Width="150" Height="150" Grid.ColumnSpan="2"/>
+        <TextBox x:Name="txtConnLog" HorizontalAlignment="Left" Height="190" Margin="979,400,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="192" Background="{x:Null}" BorderBrush="#FF002DC5"/>
+        <TextBox x:Name="txtChan1Value" HorizontalAlignment="Left" Height="23" Margin="322,223,0,0" TextWrapping="Wrap" Text="0" VerticalAlignment="Top" Width="68"/>
+        <TextBox x:Name="txtChan2Value" HorizontalAlignment="Left" Height="23" Margin="407,223,0,0" TextWrapping="Wrap" Text="0" VerticalAlignment="Top" Width="223"/>
+        <TextBox x:Name="txtChan3Value1" HorizontalAlignment="Left" Height="23" Margin="664,223,0,0" TextWrapping="Wrap" Text="0" VerticalAlignment="Top" Width="85"/>
+        <TextBox x:Name="txtChan4Value" HorizontalAlignment="Left" Height="23" Margin="939,223,0,0" TextWrapping="Wrap" Text="0" VerticalAlignment="Top" Width="135"/>
+        <TextBox x:Name="txtChan3Value2" HorizontalAlignment="Left" Height="23" Margin="783,223,0,0" TextWrapping="Wrap" Text="0" VerticalAlignment="Top" Width="85"/>
+        <Label x:Name="label_Copy2" Content="Min Value" HorizontalAlignment="Left" Margin="223,276,0,0" VerticalAlignment="Top" Foreground="Black"/>
+        <Label x:Name="label_Copy5" Content="Max Value" HorizontalAlignment="Left" Margin="223,306,0,0" VerticalAlignment="Top" Foreground="Black"/>
+        <Label x:Name="label_Copy6" Content="Offset" HorizontalAlignment="Left" Margin="223,336,0,0" VerticalAlignment="Top" Foreground="Black"/>
+        <CheckBox x:Name="chkElevator_Reverse1" Content="Reverse 1" HorizontalAlignment="Left" Margin="664,256,0,0" VerticalAlignment="Top" Checked="chkElevator_Checked" Unchecked="chkElevator_Checked"/>
+        <CheckBox x:Name="chkElevator_Reverse2" Content="Reverse 2" HorizontalAlignment="Left" Margin="783,256,0,0" VerticalAlignment="Top"/>
+        <Button x:Name="btnSaveSettings" Content="Save" HorizontalAlignment="Left" Margin="223,226,0,0" VerticalAlignment="Top" Width="55" Click="btnSaveSettings_Click"/>
+        <Controls:TuneSlider x:Name="sldElevator_MinValue1" HorizontalAlignment="Left" Margin="664,282,0,0" VerticalAlignment="Top" Width="106" ValueChanged="sldElevator_ValueChanged" Value="45"/>
+        <Controls:TuneSlider x:Name="sldElevator_MaxValue1" HorizontalAlignment="Left" Margin="664,312,0,0" VerticalAlignment="Top" Width="106" ValueChanged="sldElevator_ValueChanged" Value="145"/>
+        <Controls:TuneSlider x:Name="sldElevator_Offset1" HorizontalAlignment="Left" Margin="664,341,0,0" VerticalAlignment="Top" Width="106" ValueChanged="sldElevator_ValueChanged" Maximum="50" Minimum="-50" Value="0"/>
+        <Controls:TuneSlider x:Name="sldElevator_MinValue2" HorizontalAlignment="Left" Margin="783,282,0,0" VerticalAlignment="Top" Width="106" ValueChanged="sldElevator_ValueChanged" Value="45"/>
+        <Controls:TuneSlider x:Name="sldElevator_MaxValue2" HorizontalAlignment="Left" Margin="783,312,0,0" VerticalAlignment="Top" Width="106" ValueChanged="sldElevator_ValueChanged" Value="145"/>
+        <Controls:TuneSlider x:Name="sldElevator_Offset2" HorizontalAlignment="Left" Margin="783,341,0,0" VerticalAlignment="Top" Width="106" ValueChanged="sldElevator_ValueChanged" Value="0" Minimum="-50" Maximum="50"/>
+        <Controls:TuneSlider x:Name="sldAileron_Offset1" HorizontalAlignment="Left" Margin="407,339,0,0" VerticalAlignment="Top" Width="106" ValueChanged="sldAileron_ValueChanged" Maximum="50" Minimum="-50" Value="0"/>
+        <Controls:TuneSlider x:Name="sldAileron_Offset2" HorizontalAlignment="Left" Margin="524,339,0,0" VerticalAlignment="Top" Width="106" ValueChanged="sldAileron_ValueChanged" Value="0" Minimum="-50" Maximum="50"/>
+        <TextBox x:Name="txtTotalSendPackages" HorizontalAlignment="Left" Height="23" Margin="113,496,0,0" TextWrapping="Wrap" Text="0" VerticalAlignment="Top" Width="38"/>
+        <Controls:VTailViewer x:Name="vtailViewer" HorizontalAlignment="Left" Height="120" Margin="998,251,0,0" VerticalAlignment="Top" Width="120"/>
+        <CheckBox x:Name="chkSendChanThrottle" Content="#1 Throttle" HorizontalAlignment="Left" Margin="304,207,0,0" VerticalAlignment="Top" Checked="chkSendChan_Checked" Unchecked="chkSendChan_Checked"/>
+        <CheckBox x:Name="chkSendChanAileron" Content="L    #23 Aileron   R" HorizontalAlignment="Left" Margin="451,207,0,0" VerticalAlignment="Top" Checked="chkSendChan_Checked" Unchecked="chkSendChan_Checked"/>
+        <CheckBox x:Name="chkSendChanElevator1" Content="L    #45 Elevator    R" HorizontalAlignment="Left" Margin="702,207,0,0" VerticalAlignment="Top" Checked="chkSendChan_Checked" Unchecked="chkSendChan_Checked"/>
+        <CheckBox x:Name="chkSendChanRudder" Content="L    #67 Rudder    R" HorizontalAlignment="Left" Margin="945,207,0,0" VerticalAlignment="Top" Checked="chkSendChan_Checked" Unchecked="chkSendChan_Checked"/>
+        <CheckBox x:Name="chkSendChanElevator2" Content="" HorizontalAlignment="Left" Margin="833,207,0,0" VerticalAlignment="Top" Checked="chkSendChan_Checked" Unchecked="chkSendChan_Checked"/>
+        <Controls:Plot x:Name="plotElevator1" HorizontalAlignment="Left" Height="46" Margin="686,408,0,0" VerticalAlignment="Top" Width="48" PointX="32766" MaxX="65533" MaxY="180" PointY="90" BorderBrush="Black" BorderThickness="1"/>
+        <Controls:Plot x:Name="plotElevator2" HorizontalAlignment="Left" Height="46" Margin="790,408,0,0" VerticalAlignment="Top" Width="48" PointX="32766" MaxX="65533" MaxY="180" PointY="90" BorderBrush="Black" BorderThickness="1"/>
 
     </Grid>
 </Window>
