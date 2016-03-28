@@ -17,7 +17,7 @@ const byte DEBUG_LEVEL_NONE = 0;
 const byte DEBUG_LEVEL_INFO = 1;
 const byte DEBUG_LEVEL_VERBOSE = 2;
 
-const byte CUR_DEBUG_LEVEL = DEBUG_LEVEL_VERBOSE;
+const byte CUR_DEBUG_LEVEL = 0;
 
 const boolean LERPENABLED = false;
 // ***
@@ -55,9 +55,16 @@ int msgCounter = 0;
 
 void loop()
 {
-
+  // A_A
+      if (CUR_DEBUG_LEVEL >= DEBUG_LEVEL_VERBOSE)
+        Serial.println("Im Alive");
+      // ***
   if (Mirf.dataReady())
   {
+    // M_M
+      if (CUR_DEBUG_LEVEL >= DEBUG_LEVEL_VERBOSE)
+        Serial.println("Data Ready");
+      // ***
     if (!Mirf.isSending())
     {
       byte data[32];
@@ -126,7 +133,7 @@ void WrtieToServo(byte channel , byte &value)
   int _value = value - 10;
 
   // 0 through 9 channels are reserved
-  if ( _value < 180 && value > 0) // filter out values that cant be mapped to servo
+  if ( _value < 180 && _value > 0) // filter out values that cant be mapped to servo
   {
     if (LERPENABLED)
     {
@@ -179,11 +186,11 @@ void WrtieToServo(byte channel , byte &value)
         break;
     }
     // M_M
-    if (CUR_DEBUG_LEVEL >= DEBUG_LEVEL_VERBOSE)
-      Serial.println("Servo" + String(channel - 10) + ": " + String(_value));
+    //if (CUR_DEBUG_LEVEL >= DEBUG_LEVEL_VERBOSE)
+    //  Serial.println("Servo" + String(channel - 10) + ": " + String(_value));
     // ***
 
-    if (LERPENABLED)
+    //if (LERPENABLED)
     {
       lasts[channel - 10] = _value; // save as last value
     }
