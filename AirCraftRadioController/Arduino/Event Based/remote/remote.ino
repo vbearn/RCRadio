@@ -30,7 +30,7 @@ void setup() {
   Serial.println("Beginning ... ");
 }
 
-byte data[64];
+byte data[30];
 
 void loop()
 {
@@ -42,7 +42,8 @@ void loop()
     bufferLength += Serial.readBytes(&data[bufferLength] , Serial.available());
     //Serial.readBytes( &data[i] , Serial.available());
 
-          Serial.println("bff " + String(bufferLength));
+
+    Serial.println("bff " + String(bufferLength));
 
     // M_M
     if (bufferLength >= 64)
@@ -55,14 +56,14 @@ void loop()
     // ***
 
   }
-  
+
   if ( bufferLength >= 3 )
   {
-    byte msg[bufferLength];
-    memcpy(& msg, data, bufferLength);
+    //byte msg[bufferLength];
+    //memcpy(& msg, data, bufferLength);
     //Serial.print("Received : ");
     //Serial.println( (char*)data);
-    Mirf.send(msg);
+    Mirf.send(data);
 
     if (CUR_DEBUG_LEVEL >= DEBUG_LEVEL_VERBOSE)
       Serial.println("Sent buffer size: " + String(bufferLength));
