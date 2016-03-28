@@ -12,6 +12,16 @@ const byte NOISE_THR = 30;      // threshold of noise detection
 const float LERPFACTOR = 0.3;
 const float ESCLERPFACTOR = 0.2;
 
+// M_M
+const byte DEBUG_LEVEL_NONE = 0;
+const byte DEBUG_LEVEL_INFO = 1;
+const byte DEBUG_LEVEL_VERBOSE = 2;
+
+const byte CUR_DEBUG_LEVEL = DEBUG_LEVEL_VERBOSE;
+
+const boolean LERPENABLED = false;
+// ***
+
 Servo servo_1, servo_2, servo_3, servo_4 , servo_5, ESC;
 
 byte lasts[MAXCHANNELS];
@@ -27,8 +37,11 @@ void setup()
   Mirf.payload = 32;
 
   Mirf.config();
+  delay(1);
 
-  Serial.println("Listening...");
+  // M_M
+  if (CUR_DEBUG_LEVEL >= DEBUG_LEVEL_INFO)
+    Serial.println("Listening...");
 
   ESC.attach(9);
   servo_1.attach(2);
@@ -42,116 +55,139 @@ int msgCounter = 0;
 
 void loop()
 {
-  if (!Mirf.isSending() && Mirf.dataReady())
+
+  if (Mirf.dataReady())
   {
-    byte data[32];
-    //Serial.println("msg ready");
-    Mirf.getData(data);
+    if (!Mirf.isSending())
+    {
+      byte data[32];
+      //Serial.println("msg ready");
+      Mirf.getData(data);
 
-    parseCommand(data);
+      parseCommand(data);
 
-    //String msgBuffer = String ((char*)data);
-    //msgCounter++;
-    //Serial.print("Msg count: ");
-    //Serial.println(msgCounter);
-    //Mirf.send(data);
+      // M_M
+      if (CUR_DEBUG_LEVEL >= DEBUG_LEVEL_VERBOSE)
+      {
+        Serial.print("msg parsed");
+        Serial.println((char*) data);
+      }
+      // ***
 
+      //String msgBuffer = String ((char*)data);
+      //msgCounter++;
+      //Serial.print("Msg count: ");
+      //Serial.println(msgCounter);
+      //Mirf.send(data);
+    }
+    else
+    {
+      // M_M
+      if (CUR_DEBUG_LEVEL >= DEBUG_LEVEL_VERBOSE)
+        Serial.println("Comm parse defered: Mirf Sending");
+      // ***
+    }
   }
+
 }
-void parseCommand( byte input[32])
+void parseCommand(byte input[32])
 {
-  //int _length = sizeof(input);
-  Serial.println((char*) input);
-  for ( int i = 0 ; i < 32; i++)
+
+  for ( int i = 0 ; i < 30; i++)
   {
-    //Serial.println();
-    //Serial.print((char*)input[i]);
-    //Serial.print(input[i], DEC);
 
     if ( input[i] == commandChar)
     {
-      //Serial.println("com");
-      if ( i < 30 )
-      {
-        //if ( ConfirmValues( input[i + 1] , input[i + 2]))
-          WrtieToServo( input[i + 1] , input[i + 2]);
-        i += 2;
-      }
-      else break;
+      // M_M
+      if (CUR_DEBUG_LEVEL >= DEBUG_LEVEL_VERBOSE)
+        Serial.println("Comm char found:" + String(i));
+      // ***
+
+      //if ( ConfirmValues( input[i + 1] , input[i + 2]))
+      WrtieToServo( input[i + 1] , input[i + 2]);
+      i += 2;
     }
-    //else if ( input[i] == 0)
-    //  break;
+    else if (input[i] == 0)
+    {
+      // M_M
+      if (CUR_DEBUG_LEVEL >= DEBUG_LEVEL_VERBOSE)
+        Serial.println("End string found at:" + String(i));
+      // ***
+      break;
+    }
   }
-  //Serial.println();
+
 }
 
 void WrtieToServo(byte channel , byte &value)
 {
-  //Serial.println("writing");
+
   // 0 through 9 is reserved
   int _value = value - 10;
-  //sendData(String(value));
-  //sendData(String(_value));
+
   // 0 through 9 channels are reserved
   if ( _value < 180 && value > 0) // filter out values that cant be mapped to servo
   {
-    switch ( channel)
+    if (LERPENABLED)
     {
-      case 10 :
-      // Special lerp value for motor to fine tune starting torque based on design
-        _value = int (lerp ( lasts[0] , _value , ESCLERPFACTOR));
-        break;
-      default:
-        _value = int (lerp ( lasts[channel - 10] , _value , LERPFACTOR));
-        break;
+      switch ( channel)
+      {
+        case 10 :
+          // Special lerp value for motor to fine tune starting torque based on design
+          _value = int (lerp ( lasts[0] , _value , ESCLERPFACTOR));
+          break;
+        default:
+          _value = int (lerp ( lasts[channel - 10] , _value , LERPFACTOR));
+          break;
+      }
     }
-     
+
+
     switch ( channel)
     {
       case 10 :
         ESC.write (_value);
-        //Serial.println("wr1:" + String(_value));
         break;
       case 11 :
         servo_1.write (_value);
-        //Serial.println("wr2:" + String(_value));
         break;
       case 12 :
         servo_2.write (_value);
-        //Serial.println("wr3:" + String(_value));
         break;
       case 13 :
         servo_3.write (_value);
-        //Serial.println("wr4:" + String(_value));
         break;
       case 14 :
         servo_4.write (_value);
-        //Serial.println("wr5:" + String(_value));
         break;
       case 15 :
         servo_5.write (_value);
-        //Serial.println("wr6:" + String(_value));
         break;
       case 16 :
         //servo_4.write (_value);
-        //Serial.println("wr7:" + String(_value));
         break;
       case 17 :
         //servo_4.write (_value);
-        //Serial.println("wr8:" + String(_value));
         break;
       case 18 :
         //servo_4.write (_value);
-        //Serial.println("wr9:" + String(_value));
         break;
       case 19 :
         //servo_4.write (_value);
-        //Serial.println("wr10:" + String(_value));
         break;
       default:
         break;
     }
-    lasts[channel - 10] = _value; // save as last value
+    // M_M
+    if (CUR_DEBUG_LEVEL >= DEBUG_LEVEL_VERBOSE)
+      Serial.println("Servo" + String(channel - 10) + ": " + String(_value));
+    // ***
+
+    if (LERPENABLED)
+    {
+      lasts[channel - 10] = _value; // save as last value
+    }
+
   }
 }
 
