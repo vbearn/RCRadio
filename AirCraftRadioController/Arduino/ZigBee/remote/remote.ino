@@ -16,9 +16,25 @@ const byte DEBUG_LEVEL_NONE = 0;
 const byte DEBUG_LEVEL_INFO = 1;
 const byte DEBUG_LEVEL_VERBOSE = 2;
 
-const byte CUR_DEBUG_LEVEL = 1;
+const byte CUR_DEBUG_LEVEL = 2;
 
 const byte commandChar = 244;
+
+byte escmin = 0 ;
+byte escmax = 180;
+byte max1 = 150;
+byte max2 = 150;
+byte max3 = 155;
+byte max4 = 155;
+byte min1 = 30;
+byte min2 = 30;
+byte min3 = 25;
+byte min4 = 25;
+int offset1 = -17;
+int offset2 = 5;
+int offset3 = 4;
+int offset4 = -2;
+
 
 struct dataStruct {
 
@@ -39,23 +55,29 @@ void setup() {
 
   Serial.println(F("Configuring ... "));
 
-  //printf_begin(); // Needed for "printDetails" Takes up some memory
+  printf_begin(); // Needed for "printDetails" Takes up some memory
 
   radio.begin();          // Initialize the nRF24L01 Radio
   radio.setChannel(108);  // Above most WiFi frequencies
   radio.setDataRate(RF24_250KBPS); // Fast enough.. Better range
+  
+  //radio.setPALevel(RF24_PA_MIN);
+  //radio.setPALevel(RF24_PA_LOW);
+  //radio.setPALevel(RF24_PA_HIGH);
+  radio.setPALevel(RF24_PA_MAX);
 
-  // Set the Power Amplifier Level low to prevent power supply related issues since this is a
-  // getting_started sketch, and the likelihood of close proximity of the devices. RF24_PA_MAX is default.
-  // PALevelcan be one of four levels: RF24_PA_MIN, RF24_PA_LOW, RF24_PA_HIGH and RF24_PA_MAX
-  radio.setPALevel(RF24_PA_LOW);
-  //  radio.setPALevel(RF24_PA_MAX);
-
-  // Open a writing and reading pipe on each radio, with opposite addresses
   radio.openWritingPipe(addresses[0]);
   radio.openReadingPipe(1, addresses[1]);
-
-
+  /*
+    max1 += offset1;
+    max2 += offset2;
+    max3 += offset3;
+    max4 += offset4;
+    min1 -= offset1;
+    min2 -= offset2;
+    min3 -= offset3;
+    min4 -= offset4;
+    */
   // Start the radio listening for data
   //radio.startListening();
 
@@ -67,15 +89,80 @@ void setup() {
 
 byte data[30];
 
+byte TrimInRange(float value, byte minRange, byte maxRange) {
+  if (value > maxRange)
+    return maxRange;
+  else if (value < minRange)
+    return minRange;
+  else
+    return (byte)value;
+}
+
 void loop()
 {
-  float input = analogRead(A0);
-  input = input * 180 / 1024 ;
-  myData.servo1 = (byte) input;
+  float escInput = analogRead(A0);
+  float input2 = analogRead(A1);
+  float input3 = analogRead(A2);
+  float input1 = analogRead(A3);
+  // Map to Min - Max
+  input1 = map(input1, 0, 1023, min1, max1);
+  input2 = map(input2, 0, 1023, min2, max2);
+  input3 = map(input3, 0, 1023, min3, max3);
+  escInput = map(escInput, 0, 1023, escmax, escmin);
+
+  myData.servo1 = (byte)map(input1, min1, max1, max1, min1);
+  myData.servo2 = myData.servo1;//(byte)map(input1, min1, max1, max2, min2);
+
+  byte elev1 = (byte)input3;
+  byte elev2 = (byte)map(input3, min3, max3, max4, min4);
+
+  float rudderDeviation = (float)input2 - ((float)max2 + (float)min2) / 2;
+  byte rudderVator1 = TrimInRange(elev1 - rudderDeviation, min3, max3);
+  byte rudderVator2 = TrimInRange(elev2 - rudderDeviation, min3, max3);
+
+  myData.servo3 = rudderVator1;
+  myData.servo4 = rudderVator2;
+
+  // manage offsets
+  myData.servo1 += offset1;
+  myData.servo2 += offset2;//(byte)map(input1, min1, max1, max2, min2);
+  myData.servo3 += offset3;
+  myData.servo4 += offset4;
+
+
+
+
+
+  myData.esc = (byte)escInput;
+
+  if (CUR_DEBUG_LEVEL >= DEBUG_LEVEL_VERBOSE)
+  {
+
+    Serial.print(F("Sent, esc: "));
+    Serial.print(String((int) myData.esc ));
+
+    Serial.print(F(" servo1: "));
+    Serial.print(String((int) myData.servo1 ));
+
+    Serial.print(F(" servo2: "));
+    Serial.print(String((int) myData.servo2 ));
+
+    Serial.print(F(" servo3: "));
+    Serial.print(String((int) myData.servo3 ));
+
+    Serial.print(F(" servo4: "));
+    Serial.print(String((int) myData.servo4 ));
+
+    Serial.print(F(" servo5: "));
+    Serial.print(String((int) myData.servo5 ));
+
+    Serial.println();
+
+  }
   radio.write( &myData, sizeof(myData) );
   /*
   int bufferLength = 0;
-  
+
   while ( Serial.available() > 0)
   {
 
@@ -103,7 +190,7 @@ void loop()
     parseCommand(data);
 
     if (radio.write( &myData, sizeof(myData) )) {            // Send data, checking for error ("!" means NOT)
-      
+
       sentPackCount++;
       if (CUR_DEBUG_LEVEL >= DEBUG_LEVEL_VERBOSE)
       {
@@ -151,7 +238,7 @@ void loop()
   }
 
   bufferLength = 0;
-*/
+  */
 }
 
 
