@@ -3,7 +3,7 @@
 
 
 /*-----( Declare Variables )-----*/
-byte addresses[][6] = {"remot", "pilot"}; // These will be the names of the "Pipes"
+//byte addresses[][6] = {"remot", "pilot"}; // These will be the names of the "Pipes"
 unsigned long engineCommandCounter = 0;
 
 const byte DEBUG_LEVEL_NONE = 0;
@@ -22,8 +22,9 @@ Servo servo_1, servo_2, servo_3, servo_4 , servo_5, ESC;
 
 void setup()   /****** SETUP: RUNS ONCE ******/
 {
+  Serial3.begin(115200); 
   Serial.begin(115200);   // MUST reset the Serial Monitor to 115200 (lower right of window )
-//printf_begin();
+  //printf_begin();
   /*-----( Set up servos )-----*/
   ESC.attach(9);
   servo_1.attach(2);
@@ -31,54 +32,38 @@ void setup()   /****** SETUP: RUNS ONCE ******/
   servo_3.attach(4);
   servo_4.attach(5);
   servo_5.attach(6);
-  
+
   ESC.write (0);
   /*---------------------------*/
 
-  pinMode( A0, INPUT);
+  //pinMode( A0, INPUT);
 }//--(end setup )---
 
-
+unsigned long msgCounter = 0;
+unsigned long validMsgCounter = 0;
 byte serialBuffer[10];
-int i =0;
+int i = 0;
 void loop()   /****** LOOP: RUNS CONSTANTLY ******/
 {
+  ReadSerial();
+
+  * /
+  // A_A
   if (CUR_DEBUG_LEVEL >= DEBUG_LEVEL_VERBOSE)
   {
-    //Serial.println("R");
+    Serial.print("ESC : " + String((int)serialBuffer[0]));
+    Serial.print("servo1 : " + String((int)serialBuffer[1]));
+    Serial.print("servo2 : " + String((int)serialBuffer[2]));
+    Serial.print("servo3 : " + String((int)serialBuffer[3]));
+    Serial.println("servo4 : " + String((int)serialBuffer[4]));
   }
-  if (Serial.available()>0) //radio.available())
-  {
-    
-    while ( Serial.available()>0  && i < 10)
-    {
-      serialBuffer[i] = Serial.read();
-      Serial.print(String((int)(serialBuffer[i])) + "  ");
-      i++;
-    }
-    i=0;
-    
-    Serial.println();
-    
-    /*
-      
-    */
-    // A_A
-    if (CUR_DEBUG_LEVEL >= DEBUG_LEVEL_VERBOSE)
-    {
-      Serial.print("ESC : " + String((int)serialBuffer[0]));
-      Serial.print("servo1 : " + String((int)serialBuffer[1]));
-      Serial.print("servo2 : " + String((int)serialBuffer[2]));
-      Serial.print("servo3 : " + String((int)serialBuffer[3]));
-      Serial.println("servo4 : " + String((int)serialBuffer[4]));
-    }
-    // ***
-    WriteToServo();
+  // ***
+  
 
 
-    /*
-    */
-  } // END radio available
+  /*
+  */
+  // END radio available
   else
   {
     // Routine for when radio has failed
@@ -112,11 +97,50 @@ void EmergencyRoutine()
   ESC.write (0);
   // TODO :
   // autopilot needs to level the aircraft and prepare for crash landing
-if (CUR_DEBUG_LEVEL >= DEBUG_LEVEL_VERBOSE)
+  if (CUR_DEBUG_LEVEL >= DEBUG_LEVEL_VERBOSE)
   {
     Serial.println("EMERGENCY!");
   }
 }
 //*********( THE END )***********
 
+void ReadSerial()
+{
+  if (Serial3.available() > 0) //radio.available())
+  {
+    i = 1;
+    serialBuffer[0] = Serial3.read();
+    msgCounter++;
+    if ( serialBuffer[0] == 244)
+    {
+      while (Serial3.available() > 0 && i < 7)
+      {
+        serialBuffer[i] = Serial3.read();
+        i++;
 
+      }
+      if ( checksum())
+      {
+        validMsgCounter++;
+        // write only if all bytes are valid
+        WriteToServo();
+      }
+    }
+    else
+    {
+      //Serial.println();
+    }
+
+
+  }
+}
+
+bool checksum()
+{
+  byte sum = 0;
+  for ( int i = 1; i < 6; i++)
+  {
+    sum = sum ^ serialBuffer[i];
+  }
+  return ( sum == serialBuffer[6]);
+}
